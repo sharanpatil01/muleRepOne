@@ -14,7 +14,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	<flow name="hello-myworldFlow" doc:id="ca626ea5-7cab-4058-acf2-46e093db081a" >
 		<http:listener doc:name="Listener" doc:id="b120085a-c116-4f5e-8963-18b47f3627a1" config-ref="HTTP_Listener_config" path="/hello"/>
 		<logger level="WARN" doc:name="Logger" doc:id="26db99cd-c996-43a5-9a74-3c5ff7192e70" message='"Hello World!   from Workspace75"'/>
-		<set-payload value='"Hello World!!!!!" ++ " mule rep"' doc:name="Set Payload" doc:id="9c99d955-d637-4f9e-a8de-0d06c1932e98" />
+		<set-payload value='"Hello World!!!!!" ++ " mule rep" ++ " -- checkin1"' doc:name="Set Payload" doc:id="9c99d955-d637-4f9e-a8de-0d06c1932e98" />
 	</flow>
 	
 	
