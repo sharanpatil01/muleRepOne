@@ -54,18 +54,19 @@ payload.phrase
 	<flow name="names-myworldFlow1" doc:id="35884faf-fdf8-41f6-be0e-b12424079baf" >
 		<http:listener doc:name="Listener /names" doc:id="bc33594f-15d6-464e-aa15-160aa781cda7" config-ref="HTTP_Listener_config" path="/names/{num}" />
 		<set-variable value="#[attributes.uriParams.num]" doc:name="Set Variable" doc:id="58bbdfd8-f988-4c85-a20d-3a34889bf7c0" variableName="qty"/>
-		<http:request method="GET" doc:name="Request" doc:id="80719263-e9f5-4c9f-88ec-3691e1fc7d68" config-ref="HTTP_Request_configuration_names"/>
+		<http:request method="GET" doc:name="Request" doc:id="80719263-e9f5-4c9f-88ec-3691e1fc7d68" config-ref="HTTP_Request_configuration_names" path="/22"/>
 		<ee:transform doc:name="TM" doc:id="5aa35506-7628-4eb4-af09-b06426d2e7fc" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-{
-	"names" : payload
-}]]></ee:set-payload>
+ payload
+]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="WARN" doc:name="Logger" doc:id="3ab1a768-b610-478e-ac60-ee13c75b4236" message="#[payload]" />
+		<foreach doc:name="For Each" doc:id="3cc137a2-50e7-45ce-bbe0-bff2db0182fa" >
+			<logger level="WARN" doc:name="Logger" doc:id="3ab1a768-b610-478e-ac60-ee13c75b4236" message="#[payload]" />
+		</foreach>
 	</flow>
 	<flow name="geek-joke-flow" doc:id="3c500cfc-f520-4aa4-af9e-4bd509cbd16b" >
 		<http:listener doc:name="/jokes listener" doc:id="4725312f-6d9a-4d35-9d49-3264c38ac903" config-ref="HTTP_Listener_config" path="/jokes" />
