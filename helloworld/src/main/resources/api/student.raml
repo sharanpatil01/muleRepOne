@@ -1,0 +1,63 @@
+#%RAML 1.0
+types:
+  StudentType:
+    example:
+      strict: true
+      value:
+        studuid: AP2020VJWD20020
+        fname: Rajesh
+        lname: Pilot
+        dob: 2015-01-01
+        classyear: 2020-1st
+        address: 101, Rose Apartment, Venila Colony, Vijaywada, AP-502032
+        remarks: Student is dedicated and hardworking
+    properties:
+      studuid:
+        example: Example
+        type: string
+      fname:
+        example: Example
+        type: string
+      lname:
+        example: Example
+        type: string
+      dob?:
+        default: 2020-11-19
+        example: 2020-11-18
+        type: date-only
+      classyear:
+        example: Example
+        type: string
+      address?:
+        example: Example
+        type: string
+      remarks:
+        example: Example
+        type: string
+title: "Student-A, api for schools "
+baseUri: /studenta
+description: Student API; for better school and student management...
+mediaType:
+  - application/json
+protocols:
+  - HTTPS
+  - HTTP
+
+/student:
+  get:
+    responses:
+      200:
+        body:
+            application/json:
+              type: StudentType[]
+
+
+/student/{id}:
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            type: StudentType
+            
+      
