@@ -1,20 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	
 	
 	
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="221cb353-7d0a-4409-a6e4-7f4d1ef42e74" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="4be3ef72-7a8a-4868-9662-3021156311b4" >
+		<http:request-connection protocol="HTTPS" host="geek-jokes.sameerkumar.website" port="443" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration_names" doc:name="HTTP Request configuration" doc:id="329fc760-2156-4bfa-a9a3-fd6c612d47b5" >
+		<http:request-connection host="names.drycodes.com" port="80" >
+		</http:request-connection>
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration_corporate" doc:name="HTTP Request configuration" doc:id="116d305e-848c-4f61-9219-24ce1ceac185" >
+		<http:request-connection host="corporatebs-generator.sameerkumar.website" port="80" />
+	</http:request-config>
 	<flow name="hello-myworldFlow" doc:id="ca626ea5-7cab-4058-acf2-46e093db081a" >
-		<http:listener doc:name="Listener" doc:id="b120085a-c116-4f5e-8963-18b47f3627a1" config-ref="HTTP_Listener_config" path="/hello"/>
-		<logger level="WARN" doc:name="Logger" doc:id="26db99cd-c996-43a5-9a74-3c5ff7192e70" message='"Hello World!   from Workspace75"'/>
-		<set-payload value='"Hello World!!!!!" ++ " mule rep" ++ " -- checkin1"' doc:name="Set Payload" doc:id="9c99d955-d637-4f9e-a8de-0d06c1932e98" />
+		<http:listener doc:name="Listener /hello" doc:id="b120085a-c116-4f5e-8963-18b47f3627a1" config-ref="HTTP_Listener_config" path="/hello"/>
+		<http:request method="GET" doc:name="Request" doc:id="dae0eef5-fa50-4340-857d-9eadbc0f691d" config-ref="HTTP_Request_configuration" path="/api"/>
+		<ee:transform doc:name="Transform Message" doc:id="1482c26d-a480-4bdd-a3d8-989ab59ef6ca" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/dw
+---
+{
+	"Quote" : payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="WARN" doc:name="Logger" doc:id="26db99cd-c996-43a5-9a74-3c5ff7192e70" message='#[payload]' />
+	</flow>
+	<flow name="corp-myworldFlow" doc:id="e388b7a0-4830-4a86-9d89-2e14d7582965" >
+		<http:listener doc:name="Listener /corp" doc:id="4111d325-0955-4527-b161-1fdcddd1f0ca" config-ref="HTTP_Listener_config" path="/corp" />
+		<http:request method="GET" doc:name="Request" doc:id="c1259067-96ff-4939-8154-fe381971e805" config-ref="HTTP_Request_configuration_corporate" path="/" />
+		<ee:transform doc:name="tm" doc:id="7bc65994-baae-43b5-b118-963e823c92a7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.phrase
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="WARN" doc:name="Logger" doc:id="2e8a3a6f-b4fc-4ad9-83e2-92b0381fc095" message="#[payload]" />
+	</flow>
+	<flow name="names-myworldFlow1" doc:id="35884faf-fdf8-41f6-be0e-b12424079baf" >
+		<http:listener doc:name="Listener /names" doc:id="bc33594f-15d6-464e-aa15-160aa781cda7" config-ref="HTTP_Listener_config" path="/names/{num}" />
+		<set-variable value="#[attributes.uriParams.num]" doc:name="Set Variable" doc:id="58bbdfd8-f988-4c85-a20d-3a34889bf7c0" variableName="qty"/>
+		<http:request method="GET" doc:name="Request" doc:id="80719263-e9f5-4c9f-88ec-3691e1fc7d68" config-ref="HTTP_Request_configuration_names"/>
+		<ee:transform doc:name="TM" doc:id="5aa35506-7628-4eb4-af09-b06426d2e7fc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"names" : payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="WARN" doc:name="Logger" doc:id="3ab1a768-b610-478e-ac60-ee13c75b4236" message="#[payload]" />
+	</flow>
+	<flow name="geek-joke-flow" doc:id="3c500cfc-f520-4aa4-af9e-4bd509cbd16b" >
+		<http:listener doc:name="/jokes listener" doc:id="4725312f-6d9a-4d35-9d49-3264c38ac903" config-ref="HTTP_Listener_config" path="/jokes" />
+		<http:request method="GET" doc:name="geekjoke_Request" doc:id="22184da6-9101-4f3a-8335-b62d2f5b7e62" config-ref="HTTP_Request_configuration" path="/api" />
+		<ee:transform doc:name="gj_TM" doc:id="dfa8de70-0f76-45a7-92d3-a216ec6c2d35" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+{
+	"Quote" : payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="WARN" doc:name="gj_Logger" doc:id="b27f4b70-bfaf-459d-a66b-69ae21d988b2" message="#[payload]" />
 	</flow>
 	
 	
