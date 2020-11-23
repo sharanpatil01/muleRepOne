@@ -8,6 +8,8 @@ http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/em
 	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="d536baa5-4772-413a-9194-685c126e31ba" >
 		<email:smtp-connection host="smtp.gmail.com" port="587" user="sharanpatil01@gmail.com" password="pa66w0rd00" />
 	</email:smtp-config>
+	
+	
 	<flow name="send-email-serviceFlow" doc:id="caeb56e1-4272-4729-8653-b5fba796d57a" >
 		<http:listener doc:name="Listener /email" doc:id="092088ce-7332-4e00-9903-5eb392e1656b" config-ref="api-httpListenerConfig" path="/email"/>
 		<logger level="INFO" doc:name="Logger" doc:id="9285720a-fbf2-45df-a044-cfc85c375858" />
