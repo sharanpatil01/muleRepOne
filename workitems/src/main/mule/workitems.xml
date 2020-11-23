@@ -9,16 +9,16 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
 	<flow name="workitemsFlow" doc:id="ad78024c-9f99-48f3-b107-c83aa668dadd" >
-		<http:listener doc:name="Listener" doc:id="45c4e9f2-aba4-4430-b1b5-5001ff79186a" config-ref="HTTP_Listener_config" path="/work"/>
+		<http:listener doc:name="Listener /work" doc:id="45c4e9f2-aba4-4430-b1b5-5001ff79186a" config-ref="HTTP_Listener_config" path="/work"/>
 		<logger level="INFO" doc:name="Logger" doc:id="ba41b66d-2dd8-4d5d-b41c-84630836ff5a" message='"Hello Work Items!!!!"'/>
-		<set-variable value='"Hyderabad"' doc:name="Set Variable" doc:id="df261c60-a732-4d91-a744-4e56d6be848c" variableName="city"/>
+		<set-variable value='Hyderabad' doc:name="Set Variable" doc:id="df261c60-a732-4d91-a744-4e56d6be848c" variableName="city"/>
 		<ee:transform doc:name="Transform Message" doc:id="a980fc96-3716-4f12-a667-2fb2dcb5afdf" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	"cityname" : vars.city ++ ""
+	"cityname" : vars.city ++ "!"
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
