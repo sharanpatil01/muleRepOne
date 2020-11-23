@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="d536baa5-4772-413a-9194-685c126e31ba" >
+		<email:smtp-connection host="smtp.gmail.com" port="587" user="sharanpatil01@gmail.com" password="pa66w0rd00" />
+	</email:smtp-config>
+	<flow name="send-email-serviceFlow" doc:id="caeb56e1-4272-4729-8653-b5fba796d57a" >
+		<http:listener doc:name="Listener /email" doc:id="092088ce-7332-4e00-9903-5eb392e1656b" config-ref="api-httpListenerConfig" path="/email"/>
+		<logger level="INFO" doc:name="Logger" doc:id="9285720a-fbf2-45df-a044-cfc85c375858" />
+		<email:send doc:name="Send" doc:id="d7f2c8b6-2f8c-4161-9f39-7479628e076f" config-ref="Email_SMTP" toAddresses="sharanpatil01@gmail.com" fromAddress="sharanpatil01+mulesoft+test@gmail.com" subject="Test"/>
+	</flow>
+</mule>

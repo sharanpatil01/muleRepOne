@@ -27,7 +27,7 @@
         </apikit-soap:router>
     </flow>
     <flow name="OrderTshirt:\soapkit-config">
-        <set-variable value="vars.amount" doc:name="Set Variable" doc:id="b54993bb-d521-4a55-b3fd-2616380bd10e" variableName="amount"/>
+        <set-variable value="200" doc:name="Set Variable" doc:id="b54993bb-d521-4a55-b3fd-2616380bd10e" variableName="amount"/>
 		<choice doc:name="Choice" doc:id="c7ed77f3-d3f7-46bb-977b-2a98104743c1" >
 			<when expression="vars.amount&gt;1000">
 				<ee:transform>
@@ -51,12 +51,14 @@ ns soap http://schemas.xmlsoap.org/soap/envelope
 				<ee:transform doc:name="Transform Message" doc:id="65e78931-4e07-4cb5-b8be-248747b981ac" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/java
+ns ns0 http://mulesoft.org/tshirt-service
 ---
 {
-	"payld" : payload,
-	"msg" : "Successull!!!!"
-	}]]></ee:set-payload>
+	
+	"payld": vars.amount,
+	"msg": "Successull!!!!"
+}]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</otherwise>
