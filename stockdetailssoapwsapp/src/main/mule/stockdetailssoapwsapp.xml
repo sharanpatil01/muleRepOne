@@ -51,5 +51,6 @@ fun toPhoneFormat(str: String) =
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="b5790ab3-d2a4-460e-acc5-fc508a826229" message="#['completed']"/>
     </flow>
 </mule>
