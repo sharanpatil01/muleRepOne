@@ -1,10 +1,11 @@
 package com.srnp.sts.ohlc;
 
 public class OHLCRec {
-	String stock="";
-	float open, high, low, close, qty, lstp, pc;
-	java.util.Date date1;
+	private String stock="";
+	private float open, high, low, close, qty, lstp, pc;
+	private java.util.Date date1;
 
+	
 	
 	public String getStock() {
 		return stock;
