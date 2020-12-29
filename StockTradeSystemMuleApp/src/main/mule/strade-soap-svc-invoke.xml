@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="2e5fa020-f5cf-484a-9af7-54cd877b7e91" >
+		<wsc:connection wsdlLocation="http://localhost:8088/ws/nse?wsdl" service="NSEStocksImplService" port="NSEStocksImplPort" address="http://localhost:8088/ws/nse">
+			<wsc:web-service-security actor="http://schemas.xmlsoap.org/soap/actor/next" />
+		</wsc:connection>
+	</wsc:config>
+	<flow name="strade-soap-svc-invokeFlow" doc:id="74fbb19e-ba3c-4a06-9855-938c23a9b78a" >
+		<http:listener doc:name="http get /soap/stock/{name}" doc:id="081a1588-c503-4d10-8fa3-039d9baa0286" config-ref="HTTP_Listener_config" path="/soap/stock/{name}"/>
+		<set-variable value="#[upper(attributes.uriParams.name)]" doc:name="Set Variable" doc:id="92657a15-a6dd-4f11-b8ef-3a3c4a85910b" variableName="stockname"/>
+		<wsc:consume doc:name="Consume" doc:id="f04a13a7-9349-4a6d-b95c-d375c2574c60" config-ref="Web_Service_Consumer_Config" operation="getOhlcForSymbol">
+			<wsc:message >
+				<wsc:body ><![CDATA[#[output application/xml
+ns ns0 http://contacts.ws.aashita.com/
+---
+{
+	ns0#getOhlcForSymbol: {
+		arg0: vars.stockname as String
+	}
+}]]]></wsc:body>
+			</wsc:message>
+		</wsc:consume>
+		<ee:transform doc:name="Transform Message" doc:id="bd87dddc-5aa9-407a-aba0-3374c539fe51" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	result: payload
+	
+	}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="strade-soap-svc-invokeFlow1" doc:id="817ba8e9-1823-48af-a511-66f18dc0c502" >
+		<http:listener doc:name="http get /soap/getall" doc:id="29b97db7-e6e6-4535-bf08-773649d1e3b8" config-ref="HTTP_Listener_config" path="/soap/getall"/>
+		<wsc:consume doc:name="Consume" doc:id="fe747256-b6ba-4eca-990c-f604797476cf" config-ref="Web_Service_Consumer_Config" operation="getPriceForAllStock"/>
+		<ee:transform doc:name="Transform Message" doc:id="f3b063d2-2723-4a4e-92b3-6e8e0d420eaa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+ns ns0 http://contacts.ws.aashita.com/
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="94506838-660c-4ebb-8304-59ac80752d3e" message="'Completed!!!'"/>
+	</flow>
+	<flow name="strade-soap-svc-invokeFlow2" doc:id="0235f3a3-c895-4fc0-8b02-c9268548fa27" >
+		<http:listener doc:name="http post /soap/addstock" doc:id="1b8498e3-a470-453b-8d30-1545a3459a0d" config-ref="HTTP_Listener_config" path="/soap/addstock" allowedMethods="POST"/>
+		<ee:transform doc:name="Transform Message" doc:id="f095627a-624f-42b5-814e-6054f977cb7c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+ret:payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="6c8b5191-919f-48a1-8466-3b6c3eb4c0e7" message="#[payload]" />
+		<wsc:consume doc:name="Consume" doc:id="555d84b2-3f01-473f-81f7-2318049c3814" config-ref="Web_Service_Consumer_Config" operation="addOhlc"/>
+		<ee:transform doc:name="Transform Message" doc:id="410b93f1-a98e-4764-990e-f9294743afa3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="cdb5b89f-6e3f-4044-92e3-1b93894edbd4" />
+	</flow>
+</mule>

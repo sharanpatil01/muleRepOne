@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="bhavcopy-load-mysqlFlow" doc:id="b152bab0-2693-4d69-9c4a-34d840061d88" >
+		<file:listener doc:name="On New or Updated File" doc:id="c8e2dfa4-388f-4fcd-93a1-e417f26a7ca2" config-ref="Bhavcopy1_File_Config" directory="C:\workspaces\bhavcopyarchive" moveToDirectory="C:\workspaces\bhavcopybackupHdr" recursive="false" outputMimeType="text/csv" renameTo="#[message.attributes.fileName]" autoDelete="true">
+			<scheduling-strategy >
+				<fixed-frequency frequency="600" startDelay="5" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</file:listener>
+		<set-variable value="#[message.attributes.fileName]" doc:name="set var - inputfilename" doc:id="342aba6b-e284-4523-b754-e324d3a5afd4" variableName="inputfilename"/>
+		<ee:transform doc:name="TM-file object" doc:id="345791a1-09ad-4666-94de-e288401bf789">
+			<ee:message>
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+fun todate(str) =  str[0 to 3] ++ '-' ++ str[4 to 5] ++ '-' ++ str[6 to 7]
+fun num(str) = str replace  '-' with 0
+---
+payload map( item , index ) -> {
+	stock: item.stock,
+	date1: todate(item.tradedate) as Date {format: 'yyyy-MM-dd'}
+     as Date {format: "dd-MM-yyyy"},
+	open: num(item.open) as Number,
+	high: num(item.high) as Number,
+	low: num(item.low) as Number,
+	close: num(item.close) as Number,
+	volume: num(item.volume) as Number
+} ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<set-variable value="#[sizeOf(payload)]" doc:name="set var - filepayloadsize" doc:id="e9790f3c-a407-4545-ad8b-9fdd29ce9629" variableName="filepayloadsize" />
+		<logger level="INFO" doc:name="Logger" doc:id="d2dbf18d-52bf-4bd1-bea5-de8e035e8bcc" message="#['size : ' ++ vars.filepayloadsize]"/>
+
+		<foreach doc:name="For Each" doc:id="2e551b1f-4321-4ab0-b71f-6f6aaa2b73d9" >
+		<!-- 
+			<logger level="INFO" doc:name="Logger" doc:id="ac8867d3-6ca3-4480-b3f3-272f3e75f36a" message="#[payload.stock ++ '  ' ++ payload.volume]"/>
+		
+		 -->	<db:insert doc:name="Insert" doc:id="f256ce7d-5a90-46dc-83c0-813f7d073593" config-ref="Mysql-Local-Connection">
+				<db:sql><![CDATA[INSERT INTO OHLC5 ( SYMBOL, tradeDATE, OPEN_PRICE, HIGH_PRICE, LOW_PRICE, CLOSE_PRICE,LAST_PRICE, PREV_CLOSE, DELIV_QTY) 
+VALUES 	(:stock, :date1, :open, :high, :low, :close, :close, :open, :volume )]]></db:sql>
+				<db:input-parameters><![CDATA[#[payload]]]></db:input-parameters>
+			</db:insert>
+		</foreach>
+		
+		
+		<set-variable value="#['job:STSMuleApp']" doc:name="Set Var - jobname" doc:id="dc95db01-7485-4e29-a6b1-056f77094089" variableName="jobname"/>
+		<set-variable value="#['***** batch job completed *** ' ++ vars.inputfilename ++ '; with size : ' ++ vars.filepayloadsize ++ ', LOADED**********']" doc:name="set var - jobremarks" doc:id="5f06d258-f509-404f-a67f-e24f83d5b2b0" variableName="jobremarks" />
+		<db:insert doc:name="Insert - job-history" doc:id="fbc09b4b-5e51-4467-a7a5-8a786efb8ad8" config-ref="Mysql-Local-Connection">
+			<db:sql ><![CDATA[INSERT INTO BatchJobHistory(jobname, filename, remarks) values (:jobname, :filename, :remark)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{jobname: vars.jobname, filename: vars.inputfilename, remark: vars.jobremarks }]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="0ddf75a8-fcb3-4c08-ba1e-2e5f2441dca9" message="#[vars.jobremarks]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="e14ec689-abb5-4fb0-8b57-e8b3f51e1580" >
+				<logger level="INFO" doc:name="Logger" doc:id="e0532185-1888-450b-aa70-649b116bbb6a" message="#[payload]"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
