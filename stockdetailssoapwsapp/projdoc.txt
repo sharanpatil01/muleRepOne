@@ -1,0 +1,7 @@
+Read me!
+
+1. project created by using import WSDL file..
+2. SOAP Service Calling
+
+
+
