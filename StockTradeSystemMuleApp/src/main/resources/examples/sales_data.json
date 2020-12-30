@@ -1,0 +1,16 @@
+{
+"region": "Middle East and North Africa",
+"country": "Azerbaijan",
+"itemtype": "Snacks", 
+"saleschannel": "Online", 
+"orderpriority": "C", 
+"orderdate": "10/8/2014", 
+"orderid": "535113847", 
+"shipdate":"10/23/2014",  
+"unitssold": 934, 
+"unitprice": 152.58, 
+"unitcost": 97.44,
+"totalrevenue": 142509.72, 
+"totalcost": 91008.96,
+"totalprofit" : 9100 
+}

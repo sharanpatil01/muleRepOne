@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+
+	<db:config name="mysql-local-connection-jobhistory" doc:name="Database Config" doc:id="559c2d24-e94a-4cdb-a8d0-b28fe0602f8c" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="password" database="nse" />
+	</db:config>
+
+	<flow name="load-sales-data-mysqlFlow" doc:id="da368d59-505c-41ea-bf17-41f59c6d7f95" >
+		<http:listener doc:name="http get /load/salesdata" doc:id="b0022fd3-a431-4032-bb94-67353179755d" config-ref="HTTP_Listener_config" path="/load/salesdata"/>
+		
+		
+		<file:read doc:name="Read" doc:id="cadb31f6-b311-4f5b-ba70-47fb8578b57b" config-ref="File_Config" path="\Users\SHARANABASAPPAPATIL\data\1000SalesRecords.csv"/>
+		<set-variable value="#[message.attributes.fileName]" doc:name="var - inputfilename" doc:id="fca6e59e-f75d-470f-9959-128fdffb64a7" variableName="inputfilename" />
+		<ee:transform doc:name="TM-file object" doc:id="fb9f8f5c-5c68-422c-ab2c-21c04eeb16d8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((item, index) -> {
+	region: item.region,
+	country: item.country,
+	itemtype: item.itemtype,
+	saleschannel: item.saleschannel,
+	orderpriority: item.orderpriority,
+	orderdate: item.orderdate as Date {format: 'M/d/yyyy'} 
+			as Date{format: 'dd-MM-yyyy'},
+	orderid: item.orderid,
+	unitprice: item.unitprice 
+})
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[sizeOf(payload)]" doc:name="set var - filepayloadsize" doc:id="1eb9c2ac-b332-40af-9749-ff6fa0c0a9c9" variableName="filepayloadsize" />
+		<logger level="INFO" doc:name="Logger" doc:id="a3b01ceb-d9b9-4ab3-bc3b-04b50ef031b7" message="#[vars.inputfilename ++ ' loading.....']" />
+		<foreach doc:name="For Each - SALES" doc:id="a11e74b3-1cc6-4665-9f24-5cf3c1d1afcb" >
+			<db:insert doc:name="Insert sales record" doc:id="bd1c1d85-29d2-440a-bb55-17094fb9af38" config-ref="Mysql-Local-Connection" >
+				<db:sql ><![CDATA[INSERT INTO SALES (region, country,	itemtype, saleschannel, orderpriority,  orderid, unitprice) 
+VALUES (:region, :country,	:itemtype, :saleschannel, :orderpriority,  :orderid, :unitprice) 
+]]></db:sql>
+				<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+			</db:insert>
+		</foreach>
+		<set-variable value="#['job:STSMuleApp-Sales']" doc:name="Set Var - jobname" doc:id="978d2f84-333a-405d-90d9-b727195b13ab" variableName="jobname" />
+		<set-variable value="#['***batch job completed*** ' ++ vars.inputfilename ++ ', LOADED***']" doc:name="set var - jobremarks" doc:id="ff0e0271-e212-4536-8c6e-e4312b548227" variableName="jobremarks" />
+		<db:insert doc:name="Insert - job-history" doc:id="bf60fc78-5470-4e2b-82b9-dcc784321010" config-ref="mysql-local-connection-jobhistory" >
+			<db:sql ><![CDATA[INSERT INTO BatchJobHistory(jobname, filename, remarks) values (:jobname, :filename, :remark)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{jobname: vars.jobname, filename: vars.inputfilename, remark: vars.jobremarks }]]]></db:input-parameters>
+		</db:insert>
+		<set-payload doc:name="Set Payload" doc:id="eeae90ed-52eb-4701-b420-3e143e958af8" value='#["Sales data load job completed!!"]' />
+		<logger level="INFO" doc:name="Logger" doc:id="35f7ec12-d19d-4e05-a194-bff4d9c0655b" message="#[vars.jobremarks]" />
+	
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="53697e64-1f35-45b8-8d9d-556aafcbcc72" >
+				<logger level="INFO" doc:name="error-Logger" doc:id="d5725f39-4f2d-425a-b965-1ff828545afb" message="#[error.description]" />
+			</on-error-continue>
+		</error-handler>
+		
+	
+	</flow>
+</mule>

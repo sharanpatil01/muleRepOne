@@ -6,6 +6,9 @@
     },
     "345791a1-09ad-4666-94de-e288401bf789": {
       "attributes": "sample_data/localfileattributes.dwl"
+    },
+    "ba263aaa-5e89-467c-b752-f507ba425f7a": {
+      "payload": "sample_data/list_csv.csv"
     }
   }
 }

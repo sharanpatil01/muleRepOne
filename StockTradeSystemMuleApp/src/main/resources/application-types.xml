@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="sec_bhavcopy_data" format="csv">
+      <types:shape format="weave" example="data/sec_bhavdata_full.csv"><![CDATA[%dw 2.0
+
+type sec_bhavcopy_data = Array<{|  SYMBOL: String,   SERIES: String,   DATE1: String,   PREV_CLOSE: String,   OPEN_PRICE: String,   HIGH_PRICE: String,   LOW_PRICE: String,   LAST_PRICE: String,   CLOSE_PRICE: String,   AVG_PRICE: String,   TTL_TRD_QNTY: String,   TURNOVER_LACS: String,   NO_OF_TRADES: String,   DELIV_QTY: String,   DELIV_PER: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0",
+"separator": ","}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+        <types:property name="separator" value=","/>
+      </types:properties>
+    </types:type>
+    <types:type name="firstname_csv" format="csv">
+      <types:shape format="weave" example="examples/firstnames.csv"><![CDATA[%dw 2.0
+
+type firstname_csv = Array<{| FIRSTNAME: String |}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0",
+"separator": ","}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+        <types:property name="separator" value=","/>
+      </types:properties>
+    </types:type>
+    <types:type name="lastnames_csv" format="csv">
+      <types:shape format="weave" example="examples/lastnames.csv"><![CDATA[%dw 2.0
+
+type lastnames_csv = Array<{| LASTNAME: String |}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0",
+"separator": ","}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+        <types:property name="separator" value=","/>
+      </types:properties>
+    </types:type>
+    <types:type name="firstname_json" format="json">
+      <types:shape format="weave" example="examples/firstname.json"><![CDATA[%dw 2.0
+
+type firstname_json = {| FIRSTNAME: String |} {"example": "{\\\"FIRSTNAME\\\":\\\"Acharya\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="sales_data_csv" format="csv">
+      <types:shape format="weave" example="data/1000SalesRecords.csv"><![CDATA[%dw 2.0
+
+type sales_data_csv = Array<{|  region: String,   country: String,   itemtype: String,   saleschannel: String,   orderpriority: String,   orderdate: String,   orderid: String,   shipdate: String,   unitssold: String,   unitprice: String,   unitcost: String,   totalrevenue: String,   totalcost: String,   totalprofit: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0",
+"separator": ","}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+        <types:property name="separator" value=","/>
+      </types:properties>
+    </types:type>
+    <types:type name="sales_data_json" format="json">
+      <types:shape format="weave" example="examples/sales_data.json"><![CDATA[%dw 2.0
+
+type sales_data_json = {|
+  region: String, 
+  country: String, 
+  itemtype: String, 
+  saleschannel: String, 
+  orderpriority: String, 
+  orderdate: String, 
+  orderid: String, 
+  shipdate: String, 
+  unitssold: Number {"typeId": "int"}, 
+  unitprice: Number {"typeId": "double"}, 
+  unitcost: Number {"typeId": "double"}, 
+  totalrevenue: Number {"typeId": "double"}, 
+  totalcost: Number {"typeId": "double"}, 
+  totalprofit: Number {"typeId": "int"}
+|} {"example": "{\\\"region\\\":\\\"Middle East and North Africa\\\",\\\"country\\\":\\\"Azerbaijan\\\",\\\"itemtype\\\":\\\"Snacks\\\",\\\"saleschannel\\\":\\\"Online\\\",\\\"orderpriority\\\":\\\"C\\\",\\\"orderdate\\\":\\\"10\\/8\\/2014\\\",\\\"orderid\\\":\\\"535113847\\\",\\\"shipdate\\\":\\\"10\\/23\\/2014\\\",\\\"unitssold\\\":934,\\\"unitprice\\\":152.58,\\\"unitcost\\\":97.44,\\\"totalrevenue\\\":142509.72,\\\"totalcost\\\":91008.96,\\\"totalprofit\\\":9100}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#668ea66a-0e75-4bfa-bfd8-12ace72b8704">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="sec_bhavcopy_data"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#ece23616-40fd-4b37-b5bb-a30b47119625">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="firstname_csv"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="firstname_json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#ba263aaa-5e89-467c-b752-f507ba425f7a">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="lastnames_csv"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#fb9f8f5c-5c68-422c-ab2c-21c04eeb16d8">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="sales_data_csv"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

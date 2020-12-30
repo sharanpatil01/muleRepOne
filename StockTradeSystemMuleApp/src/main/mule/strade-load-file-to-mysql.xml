@@ -14,7 +14,9 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 	<file:config name="File_Config" doc:name="File Config" doc:id="5883a3b7-3eda-44af-9636-c5cb56b2fa7b" />
 	
 	<db:config name="Mysql-Local-Connection" doc:name="Database Config" doc:id="d715bc12-cf07-4bec-8d47-916b366bbfe7" >
-		<db:my-sql-connection host="localhost" port="3306" user="root" password="password" database="nse" />
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="password" database="nse" >
+			<db:pooling-profile maxPoolSize="25" preparedStatementCacheSize="50" />
+		</db:my-sql-connection>
 	</db:config>
 	
 	
@@ -52,7 +54,7 @@ output application/json
 	</flow>
 	<flow name="OhlcDataLoad2Mysql" doc:id="97a18d29-9bd8-4e6a-b7b5-119a4a8d186a" >
 		<http:listener doc:name="GET /mload" doc:id="795fdcda-a627-42f8-a2a3-4ca45b222123" config-ref="HTTP_Listener_config" path="/mload"/>
-		<file:read doc:name="Read" doc:id="3efe0dc9-0822-4687-8787-f04a3d4e97de" config-ref="File_Config" path="C:\Users\SHARANABASAPPAPATIL\Downloads\sec_bhavdata_full.csv"/>
+		<file:read doc:name="Read" doc:id="3efe0dc9-0822-4687-8787-f04a3d4e97de" config-ref="File_Config" path="data\sec_bhavdata_full.csv"/>
 		<ee:transform doc:name="Transform Message" doc:id="668ea66a-0e75-4bfa-bfd8-12ace72b8704">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0

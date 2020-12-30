@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="sales_data_ping_Flow" doc:id="9ec1e5cf-8169-49f7-9714-1ec28ff58305" >
+		<http:listener doc:name="http get /ping" doc:id="b67f6afd-429b-4d72-a7fe-4ab74d5ab423" config-ref="HTTP_Listener_config" path="/ping"/>
+		<set-payload value='#["PING SUCCESSFUL!"]' doc:name="Set Payload" doc:id="fc7dd03b-3523-413c-a934-cff3184e0d42" />
+		<logger level="INFO" doc:name="Logger" doc:id="56385eec-8f1b-4162-95b5-7e6cd4784b2d" message="#[payload]"/>
+	</flow>
+</mule>

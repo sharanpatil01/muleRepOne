@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="loadfirstnamesFlow" doc:id="2d2f1d41-f209-406b-80d4-8f049ce5e819" >
+		<http:listener doc:name="http get /load/firstnames" doc:id="1d2927cc-8b77-4428-b598-62f160f683a3" config-ref="HTTP_Listener_config" path="/load/firstnames"/>
+		<logger level="INFO" doc:name="Logger" doc:id="9bdb49bc-48da-4dc3-b0bb-94d48f83daa8" message="'Started..'"/>
+		<set-variable value="'Job:LoadFirstNames'" doc:name="set var - jobname" doc:id="f52aac99-25a3-49ee-836e-deaa6d804350" variableName="jobname"/>
+		<file:read doc:name="Read" doc:id="b283a950-d173-44ce-8bb8-feace820532c" config-ref="File_Config" path="C:\Users\SHARANABASAPPAPATIL\data\firstnames.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="ece23616-40fd-4b37-b5bb-a30b47119625" >
+			<ee:message >
+				<ee:set-payload resource="firstname_json.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="e1f01075-c16e-46d2-8823-7df0a543731c" message="#[message.attributes.fileName]"/>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="10a55f26-3cb7-430c-b436-e3bf53b821df" >
+			<logger level="INFO" doc:name="lool-fname-Logger" doc:id="fe2d25de-130e-4814-82c3-2f21bba91525" message="#[payload]" />
+			<db:insert doc:name="Insert" doc:id="1ee99736-45a4-4ed5-8b11-96ac08773dd4" config-ref="Mysql-Local-Connection">
+			<db:sql><![CDATA[insert into firstnames(firstname) 
+values (:FIRSTNAME)]]></db:sql>
+			<db:input-parameters><![CDATA[#[{ FIRSTNAME: payload.FIRSTNAME }]]]></db:input-parameters>
+		</db:insert>
+		</parallel-foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="cac1550a-171b-402e-9dbd-73b4b1ffa6d5" message="'LOAD job completed!!!'"/>
+	</flow>
+	<flow name="load-lastnamesFlow" doc:id="43b7c505-4644-48cc-ba0b-b452eb8bfab7" >
+		<http:listener doc:name="http get /load/lastnames" doc:id="781ce0dd-acdb-4dbb-847f-b8bf3eb965e0" config-ref="HTTP_Listener_config" path="/load/lastnames" />
+		<logger level="INFO" doc:name="Logger" doc:id="1c48c10f-e320-4e31-8aef-9ffd2fdaa0dd" message="'Started..'" />
+		<set-variable value="'Job:LoadLastNames'" doc:name="set var - jobname" doc:id="1461c8ac-a44e-49e5-b02a-2f758999acc2" variableName="jobname" />
+		<file:read doc:name="Read file lastnames.csv" doc:id="57f11116-7df0-42d5-a6e1-79e7e5fb2de7" config-ref="File_Config" path="C:\Users\SHARANABASAPPAPATIL\data\lastnames.csv" />
+		<ee:transform doc:name="TM csv2json" doc:id="ba263aaa-5e89-467c-b752-f507ba425f7a" >
+			<ee:message >
+				<ee:set-payload resource="firstname_json.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="7df455bd-621e-4b6b-8c53-a817969b99b6" message="#[payload]"/>
+		<foreach doc:name="For Each" doc:id="73335bdf-751e-4320-8601-fd6fed836444" >
+			<logger level="INFO" doc:name="loop-Logger" doc:id="8da781b1-da1c-4084-ae64-850352905249" message="#[payload]" />
+			<db:insert doc:name="Insert to lastnames " doc:id="6851acc7-e1b6-4798-8505-4b1d49e7751e" config-ref="Mysql-Local-Connection" >
+				<db:sql ><![CDATA[insert into lastnames(lastname) 
+values (:LASTNAME)]]></db:sql>
+				<db:input-parameters ><![CDATA[#[{LASTNAME: payload.LASTNAME}]]]></db:input-parameters>
+			</db:insert>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="d889bfa7-b132-4432-a1ea-671cae3ce7ce" message="'LOAD job completed!!!'"/>
+	</flow>
+</mule>
