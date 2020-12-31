@@ -94,6 +94,23 @@ type sales_data_json = {|
 
 ]]></types:shape>
     </types:type>
+    <types:type name="add_stock_json" format="json">
+      <types:shape format="weave" example="examples/addStockInput.json"><![CDATA[%dw 2.0
+
+type add_stock_json = {|
+  id: Number {"typeId": "int"}, 
+  symbol: String, 
+  high_price: Number {"typeId": "int"}, 
+  low_price: Number {"typeId": "int"}, 
+  open_price: Number {"typeId": "int"}, 
+  close_price: Number {"typeId": "int"}, 
+  last_price: Number {"typeId": "int"}, 
+  prev_close: Number {"typeId": "int"}, 
+  deliv_qty: Number {"typeId": "int"}
+|} {"example": "{\\\"id\\\":100,\\\"symbol\\\":\\\"WIPRO\\\",\\\"high_price\\\":550,\\\"low_price\\\":400,\\\"open_price\\\":400,\\\"close_price\\\":500,\\\"last_price\\\":450,\\\"prev_close\\\":390,\\\"deliv_qty\\\":10000}"}
+
+]]></types:shape>
+    </types:type>
   </types:catalog>
   <types:enrichment select="#668ea66a-0e75-4bfa-bfd8-12ace72b8704">
     <types:processor-declaration>
@@ -134,6 +151,38 @@ type sales_data_json = {|
           <types:payload type="sales_data_csv"/>
         </types:message>
       </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f095627a-624f-42b5-814e-6054f977cb7c">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="add_stock_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#acfce3d7-cbdf-4496-a36a-496bff75de8f">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="add_stock_json"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="add_stock_json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f3b063d2-2723-4a4e-92b3-6e8e0d420eaa">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="add_stock_json"/>
+        </types:message>
+      </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
 </types:mule>

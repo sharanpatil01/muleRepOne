@@ -10,13 +10,12 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="95b96dc3-e937-4273-86a0-47dd6e9a000f" basePath="/nse" >
 		<http:request-connection host="localhost" port="8080" />
 	</http:request-config>
-	<flow name="strade-mysql-getallstocks-flow" doc:id="084c735a-4193-42e8-a09d-99185c90b90b" >
-		<http:listener doc:name="GET /mnse/all" doc:id="7aba9f6a-9e44-451c-a071-ec8cfd51d4a5" config-ref="HTTP_Listener_config" path="/mnse/all"/>
-		<db:select doc:name="Select" doc:id="74231f15-99f1-441a-9a0f-c3da71982016" config-ref="Mysql-Local-Connection">
-			<db:sql ><![CDATA[select * from ohlc5]]></db:sql>
+	<sub-flow name="pull_db_records_for_OHLC" doc:id="51d1d412-e066-435f-867a-29223e0441f0" >
+		<db:select doc:name="Select" doc:id="74231f15-99f1-441a-9a0f-c3da71982016" config-ref="Mysql-Local-Connection" transactionalAction="NOT_SUPPORTED" queryTimeout="5" fetchSize="200" maxRows="2000">
+			<db:sql><![CDATA[select * from ohlc5 order by id desc LIMIT 50]]></db:sql>
 		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="ce6a62c0-c8a9-4ddc-bfad-cf83d1c3e521" >
-			<ee:message >
+		<ee:transform doc:name="Transform Message" doc:id="ce6a62c0-c8a9-4ddc-bfad-cf83d1c3e521">
+			<ee:message>
 				
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -29,7 +28,40 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="58a3ec6f-0cd1-4357-9b5a-cc6987485dab" message="#['Payload returned with Stock list size : ' ++ sizeOf( payload.stock )]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="58a3ec6f-0cd1-4357-9b5a-cc6987485dab" message="#['Payload returned with Stock list size : ' ++ sizeOf( payload.stock )]" />
+	</sub-flow>
+	<flow name="strade-mysql-getallstocks-flow" doc:id="084c735a-4193-42e8-a09d-99185c90b90b" >
+		<http:listener doc:name="GET /mnse/all" doc:id="7aba9f6a-9e44-451c-a071-ec8cfd51d4a5" config-ref="HTTP_Listener_config" path="/mnse/all"/>
+		<db:select doc:name="Select" doc:id="fa27d17f-dc26-45d9-885c-c7ec7a78da35" config-ref="Mysql-Local-Connection">
+			<db:sql ><![CDATA[SELECT COUNT(*) RECORDCOUNT FROM OHLC5]]></db:sql>
+		</db:select>
+		<set-variable value="#[payload.RECORDCOUNT[0] as Number]" doc:name="Set Variable" doc:id="f5a6df57-bc77-459e-a276-1891e4ff361a" variableName="recordCount"/>
+		<choice doc:name="Choice" doc:id="f06d380e-8584-4c14-b16f-6a2449a015bb" >
+			<when expression="#[vars.recordCount &gt; 50]">
+				<flow-ref doc:name="Flow Reference" doc:id="0aa32308-0a7a-4aee-9623-37eeb73f3fcc" name="pull_db_records_for_OHLC" />
+				<ee:transform doc:name="Transform Message" doc:id="e3e9e291-a38e-4514-8184-95dfc43ea4a3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+[{
+	"remark" : "table returned only 50 records out of : " ++ vars.recordCount as String
+}]
+
+++
+
+payload 
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="a575e7cb-e206-4845-8fd8-ba5e4c4d666e" message="#[payload]"/>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="Flow Reference" doc:id="bfa42aaf-17e9-416e-852e-edaed46d4dc8" name="pull_db_records_for_OHLC"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="b7a92baf-598e-40de-b604-637796c7d805" message="#[payload]" />
 	</flow>
 	<flow name="strade-mysql-getstocks-flow" doc:id="9ddb23ad-ec60-4772-84f5-fcff6ae0e5f2" >
 		<http:listener doc:name="Call NSEAPI /mnse/stock/{symbol}" doc:id="3d9691ac-8548-49c9-b518-c159dd10699f" config-ref="HTTP_Listener_config" path="/mnse/stock/{symbol}"/>

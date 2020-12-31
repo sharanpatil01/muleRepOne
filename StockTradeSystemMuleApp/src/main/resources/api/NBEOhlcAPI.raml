@@ -1,0 +1,35 @@
+#%RAML 1.0
+title: NBE OHLC API (NBEOhlcAPI.raml)
+version: v1
+
+baseUri: http://localhost:8081/
+
+
+/nbe:
+  displayName: NBExchange data
+  /{infy}:
+    get:
+      description: return ohlc for all available days.
+      displayName: Dail OHLC data
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                [
+                {
+                    'sno': 1646,
+                    'stock': 'WIPRO',
+                    'price': 313.05,
+                    'qty': 9257331
+                },
+                {
+                    'sno': 3397,
+                    'stock': 'WIPRO',
+                    'price': 333.95,
+                    'qty': 38906392
+                }
+                ]
+
+
+
