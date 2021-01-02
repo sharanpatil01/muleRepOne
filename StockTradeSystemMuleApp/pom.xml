@@ -111,6 +111,13 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.aashita.random</groupId>
+			<artifactId>random-generator-app-1.0</artifactId>
+			<version>v1</version>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
 
 	<repositories>

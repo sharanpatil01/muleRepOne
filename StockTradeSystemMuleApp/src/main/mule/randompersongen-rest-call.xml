@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:request-config name="HTTP_Request_Rest_Persons_Configuration" doc:name="HTTP Request configuration" doc:id="bc2a8b98-9922-4c6e-8fb4-ef4990237f03" >
+		<http:request-connection host="localhost" port="8080" />
+	</http:request-config>
+	<flow name="randompersongen-rest-callFlow" doc:id="7279e47c-9ddc-49dc-a352-cf3f0511a0fd" >
+		<http:listener doc:name="http get /random/persons/{num}" doc:id="384dcafc-82ab-480d-9d7f-b6fb244aa121" config-ref="HTTP_Listener_config" path="/random/persons/{num}"/>
+		<set-variable value="#[attributes.uriParams.num]" doc:name="Set Variable" doc:id="cade0ad9-6fc8-4383-99b5-9ff163854302" variableName="num"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f5bb4fd8-3683-45d6-9de2-f341a7621c37" message="#['number of persons to be returned :' ++ vars.num]"/>
+		<http:request method="GET" doc:name="Request" doc:id="34fb94af-5c33-44c8-81eb-84dd4b3c95b8" config-ref="HTTP_Request_Rest_Persons_Configuration" path="/persons/{account}" responseTimeout="8000">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"account" : vars.num
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="d9afc867-c66f-430b-b2e4-bee1dfd53321" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((item, index) -> {
+	fname: item.fName,
+	lname: item.lName,
+	email: lower(item.fName) ++ '.' ++ lower(item.lName) ++ '@gmail.com'    
+})
+
+ 
+ ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="214260ee-fd03-4b18-a5be-dd8a46669b6d" message='#["Flow completed!!!"]'/>
+		<foreach doc:name="For Each" doc:id="23e6ae0b-6b0f-4392-83d1-05145a0078ba" >
+			<!-- 
+				<logger level="INFO" doc:name="Logger" doc:id="09955d6c-833d-4dc6-b969-dcd0c49e402b" message="#[payload]" /> 
+			-->
+			
+			<db:insert doc:name="Insert" doc:id="821fce3d-545d-40c3-88da-455c4331cc3b" config-ref="Mysql-Local-Connection">
+			<db:sql><![CDATA[ INSERT INTO PERSONS(FNAME, LNAME, EMAIL) VALUES (:fn,:ln, :email);]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	fn: payload.fname,
+	ln: payload.lname,
+	email: payload.email
+	
+}]]]></db:input-parameters>
+		</db:insert>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="e6e6249b-75d2-4338-95ef-f91cceb1c309" message='#[payload]'/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a5059d2b-000a-4718-81b5-3b6de4866b26" type="HTTP:CONNECTIVITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT">
+				<set-payload value="#[error.errorType]" doc:name="Set Payload" doc:id="7c98994e-76b6-4a8f-9444-8187d14554ba" />
+				<logger level="INFO" doc:name="Logger" doc:id="8a0d4ea9-cd7b-4e82-9417-23e108aa20a8" message="#[error.errorType]"/>
+			</on-error-propagate>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4360cb90-1a7c-416c-a3d3-1427b05b2e7b" type="ANY">
+				<set-payload value="#[error.errorMessage]" doc:name="Set Payload" doc:id="a46ff8e2-0b86-49e9-b637-41a27d4b03a8" />
+				<logger level="INFO" doc:name="Logger" doc:id="9adfc0a0-a41f-4e1a-87c0-e22f3b4ad60b" message="payload"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
