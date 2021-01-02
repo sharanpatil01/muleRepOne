@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="stock_json" format="json">
+      <types:shape format="weave" example="stock_obj.json"><![CDATA[%dw 2.0
+
+type stock_json = {|
+  id: Number {"typeId": "int"}, 
+  symbol: String, 
+  high_price: Number {"typeId": "int"}, 
+  low_price: Number {"typeId": "int"}, 
+  open_price: Number {"typeId": "int"}, 
+  close_price: Number {"typeId": "int"}, 
+  deliv_qty: Number {"typeId": "int"}
+|} {"example": "{\\\"id\\\":1000,\\\"symbol\\\":\\\"ABC\\\",\\\"high_price\\\":10000,\\\"low_price\\\":5000,\\\"open_price\\\":6000,\\\"close_price\\\":90000,\\\"deliv_qty\\\":25000}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="namestr" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="ohlc_xml" format="xml">
+      <types:example format="xml" element="{http://contacts.ws.aashita.com/}getOhlcForSymbol" location="Ohlc.xml"/>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#45622a91-a335-4ed3-8b55-0c47ac82c4fe">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="namestr"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#c22eff76-7d0b-4ce6-bf7e-62a0b2309a81">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="namestr"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="namestr"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#26c4cffb-6d1e-49e5-aeb3-0e8cddcff9f7">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="stock_json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#9652c297-6ff1-4554-a2ba-6b544edbda4e"/>
+</types:mule>

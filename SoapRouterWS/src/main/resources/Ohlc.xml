@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<con:getOhlcForSymbol xmlns:con="http://contacts.ws.aashita.com/">
+         <!--Optional:-->
+         <arg0>ITC</arg0>
+      </con:getOhlcForSymbol>

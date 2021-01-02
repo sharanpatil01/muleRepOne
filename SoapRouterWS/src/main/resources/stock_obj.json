@@ -1,0 +1,9 @@
+{
+		"id":1000,
+		"symbol": "ABC",
+		"high_price": 10000,
+		"low_price": 5000,
+		"open_price": 6000,
+		"close_price": 90000,
+		"deliv_qty": 25000
+}	

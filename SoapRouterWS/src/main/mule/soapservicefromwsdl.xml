@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+    <http:listener-config name="api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081"/>
+    </http:listener-config>
+    <apikit-soap:config httpStatusVarName="httpStatus" name="soapkit-config" port="NSEStocksImplPort" service="NSEStocksImplService" wsdlLocation="http://localhost:8088/ws/nse?wsdl"/>
+    <db:config name="localMysqlConfig" doc:name="Database Config" doc:id="32d8183a-b372-4424-ab98-ae648ba2ba7b" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="password" database="nse" />
+	</db:config>
+	<flow name="api-main">
+        <http:listener config-ref="api-httpListenerConfig" path="/NSEStocksImplService/NSEStocksImplPort">
+            <http:response statusCode="#[attributes.protocolHeaders.httpStatus default 200]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[attributes.protocolHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[attributes.protocolHeaders.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[attributes.protocolHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit-soap:router config-ref="soapkit-config">
+            <apikit-soap:attributes><![CDATA[#[%dw 2.0
+              output application/java
+              ---
+              {
+                  headers: attributes.headers,
+                  method: attributes.method,
+                  queryString: attributes.queryString
+            }]]]></apikit-soap:attributes>
+        </apikit-soap:router>
+    </flow>
+    <flow name="getHelloWorldAsString:\soapkit-config">
+        <logger level="INFO" doc:name="Logger" doc:id="5f0f7371-2b4b-455a-bacd-7684fcff3360" />
+		<ee:transform doc:id="c22eff76-7d0b-4ce6-bf7e-62a0b2309a81">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+{
+    body: {
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "Operation [getHelloWorldAsString:\soapkit-config] not implemented"
+        }
+    } write "application/xml"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="getLastPriceForStock:\soapkit-config">
+        <ee:transform doc:id="26c4cffb-6d1e-49e5-aeb3-0e8cddcff9f7">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+ns soap http://schemas.xmlsoap.org/soap/envelope
+ns ns0 http://contacts.ws.aashita.com/
+---
+{
+    body: {
+        ns0#Stock: {
+		"id":1000,
+		"symbol": "ABC",
+		"high_price": 10000,
+		"low_price": 5000,
+		"open_price": 6000,
+		"close_price": 90000,
+		"deliv_qty": 25000
+	 }
+    } write "application/xml"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="78beaa4a-c111-437d-9c33-1bf2b21415e0" message="#[payload]"/>
+    </flow>
+    <flow name="getPriceForAllStock:\soapkit-config">
+        
+        <db:select doc:name="Select" doc:id="26aff68f-0187-4318-9850-75095a60aec9" config-ref="localMysqlConfig">
+			<db:sql ><![CDATA[select * from ohlc5 order by id desc LIMIT 8]]></db:sql>
+		</db:select>
+		
+		<ee:transform doc:id="45622a91-a335-4ed3-8b55-0c47ac82c4fe">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+ns soap http://schemas.xmlsoap.org/soap/envelope
+ns ns0 http://contacts.ws.aashita.com/
+---
+{
+    body: {
+	ns0#getPriceForAllStockResponse: {
+		"Stocks": payload
+	}
+    	
+    } write "application/xml"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="getOhlcForSymbol:\soapkit-config">
+        <logger level="INFO" doc:name="Logger" doc:id="8a19214a-0ccb-4945-9ef4-eae1ed4c30f2" message="#[payload.body.getOhlcForSymbol.arg0]"/>
+		<set-variable value="#[payload.body.getOhlcForSymbol.arg0]" doc:name="Set Variable" doc:id="9652c297-6ff1-4554-a2ba-6b544edbda4e" variableName="stockname"/>
+		<choice doc:name="Choice" doc:id="37fe712e-a81e-4658-b8a9-814480f7eba7" >
+			<when expression="payload.body.getOhlcForSymbol.arg0 == 'ITC'">
+				<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+ns soap http://schemas.xmlsoap.org/soap/envelope
+ns ns0 http://contacts.ws.aashita.com/
+---
+{
+    body: {
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "Operation [getOhlcForSymbol:\soapkit-config] not implemented"
+        }
+    } write "application/xml"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="eb226a9a-1c0f-4fc7-bdf9-a4a94994f67b" message="#[payload]" />
+			</when>
+			<otherwise >
+				<db:select doc:name="Select" doc:id="97d69280-115d-4fa8-b897-482dd869e03d" config-ref="localMysqlConfig">
+			<db:sql><![CDATA[select * from ohlc5 
+where symbol = :stockname
+order by id desc]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{stockname: vars.stockname}]]]></db:input-parameters>
+		</db:select>
+				<ee:transform doc:name="Transform Message" doc:id="828c362a-6abe-4f72-85a2-4067a22e65e3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+ns soap http://schemas.xmlsoap.org/soap/envelope
+ns ns0 http://contacts.ws.aashita.com/
+---
+{
+    body: {
+	ns0#getPriceForAllStockResponse: {
+		"Stocks": payload map ((item,index) -> {
+			sno: index,
+			tradedate: item.tradeDate,
+			name: item.SYMBOL,
+			cmp: item.LAST_PRICE as Number as String {format: '##,##,###.0#'}
+		})
+	}
+    	
+    } write "application/xml"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="092ac41d-c663-4137-b0cd-268765282e24" />
+			</otherwise>
+		</choice>
+    </flow>
+    <flow name="addOhlc:\soapkit-config">
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+{
+    body: {
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "Operation [addOhlc:\soapkit-config] not implemented"
+        }
+    } write "application/xml"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>
