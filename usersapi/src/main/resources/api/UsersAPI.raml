@@ -1,0 +1,234 @@
+#%RAML 1.0
+title: UsersAPI to manage user for different application.
+version: v1
+protocols:
+  - HTTP
+baseUri: http://localhost:8081/api/{version}
+mediaType: 
+- application/json
+
+securitySchemes:
+  basicAuth:
+    description: Each request must contain headers necessary for basic auth. 
+    type: Basic Authentication
+    describedBy:
+      headers:
+        Authorization: 
+          description: Used to send Base64 encoded "username:password" credentials
+          type: string
+      responses:        
+        401:
+          description: Unauthorized. Either the provided username and password
+            combination is invalid, or the user is not allowed to access
+            the content provided by the requested URL.
+
+types:
+  Users: !include types/UserType.raml
+    
+  Stock: !include types/StockType.raml
+
+  Error:
+    properties:
+      code: integer
+      message: string
+          
+
+/users:
+  get:
+    description: lists Users matching query criteria, if provided; else list all users
+    queryParameters:
+      name?: string
+      lname?: string
+    responses:
+      200:
+        body:
+          application/json:
+            type: Users[]
+            example: !include examples/users.json            
+  post:
+    description: create a new user record.
+    body:
+      application/json:
+        type: Users
+        example : !include examples/user.json  
+    responses:
+      201:
+        body:
+          application/json:
+            type: Users
+            example :  !include examples/user.json   
+              
+  /{id}:
+    get:
+      description: list a User by id; 
+      responses:
+        200:
+          body:
+            application/json:
+              type: Users
+              example:  !include examples/user.json 
+        404:
+          body:
+            application/json:
+              type: Error
+              example: !include examples/error.json
+                        
+    put:
+      description: update a user by id;
+      body:
+        application/json:
+          type: Users
+          example: !include examples/user.json
+            
+      responses:
+        200:
+          body:
+            application/json:
+              type: Users
+              example:  !include examples/user.json 
+        404:
+          body:
+            application/json:
+              type: Error
+              example: !include examples/error.json
+                
+    delete:
+      description: delete a user by id
+      responses:
+        204:
+        404:
+          body:
+            application/json:
+              type: Error
+              example:  !include examples/error.json 
+                    
+  /name/{name}:
+    get:
+      description: lists all User by name;
+      responses:
+        200:
+          body:
+            application/json:
+              type: Users[]
+              example:  !include examples/users.json 
+      
+
+
+
+/stocks:
+  get:
+    description: lists Stocks matching query criteria, if provided; else list all stocks
+    queryParameters:
+      name?: string
+      id?: string
+    responses:
+      200:
+        body:
+          application/json:
+            type: Stock[]
+            example: !include examples/stocks.json            
+  post:
+    description: create a new stock record.
+    body:
+      application/json:
+        type: Stock[]
+        example : !include examples/stocks.json  
+    responses:
+      201:
+        body:
+          application/json:
+            type: Stock[]
+            example :  !include examples/stocks.json   
+      404:
+        body:
+          application/json:
+            type: Error
+            example: !include examples/error.json
+              
+
+
+  /{id}:
+    get:
+      description: list a Stock by id; 
+      responses:
+        200:
+          body:
+            application/json:
+              type: Stock
+              example:  !include examples/stock.json 
+        404:
+          body:
+            application/json:
+              type: Error
+              example: !include examples/error.json
+                        
+    put:
+      description: update a stock by id;
+      body:
+        application/json:
+          type: Stock
+          example: !include examples/stock.json
+            
+      responses:
+        200:
+          body:
+            application/json:
+              type: Stock
+              example:  !include examples/stock.json 
+        404:
+          body:
+            application/json:
+              type: Error
+              example: !include examples/error.json
+                
+
+
+
+
+    delete:
+      description: delete stock matching id criteria.
+      responses:
+        204:
+        404:
+          body:
+            application/json:
+              type: Error
+              example:  !include examples/error.json 
+
+
+
+  /name/{name}:
+    get:
+      description: fetch stock(s) matching name criteria.
+      responses:
+        200:
+          body:
+            application/json:
+              type: Stock[]
+              example:  !include examples/stocks.json 
+
+
+/hello:
+    description: hello service
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              type: string
+              example: "HELLO wORLD!!!"
+                
+/ping:
+  description: ping service
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            type: string
+            example: "Ping is successful!!"
+
+
+
+            
+              

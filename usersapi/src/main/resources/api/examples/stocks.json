@@ -1,0 +1,24 @@
+[
+{
+    "id": 100,
+    "symbol": "WIPRO",
+    "high_price": 550,
+    "low_price": 400,
+    "open_price": 400,
+    "close_price": 500,
+    "last_price": 450,
+    "prev_close": 390,
+    "deliv_qty": 10000
+},
+{
+    "id": 100,
+    "symbol": "WIPRO",
+    "high_price": 550,
+    "low_price": 400,
+    "open_price": 400,
+    "close_price": 500,
+    "last_price": 450,
+    "prev_close": 390,
+    "deliv_qty": 10000
+}
+]
