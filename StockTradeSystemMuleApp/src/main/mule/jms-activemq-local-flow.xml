@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="7c51e720-b267-4f55-8c7e-b0b4467a8593" >
+		<jms:active-mq-connection />
+	</jms:config>
+	<flow name="jms-activemq-local-flowFlow" doc:id="949c2457-798b-4f4c-837b-60dbecafe331" >
+		<jms:consume doc:id="279896fb-935a-4e63-aad2-d69a7fbd280e" config-ref="JMS_Config" ackMode="IMMEDIATE" destination="TEST:QUEUE">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+		</jms:consume>
+		<logger level="INFO" doc:name="Logger" doc:id="6f699399-acdb-492e-9e76-364a6ac9a553" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="b91a9fa7-4084-482d-ac0f-5a928d256c32" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

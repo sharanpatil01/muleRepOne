@@ -1,0 +1,30 @@
+#%RAML 1.0
+title: basic-auth-ldap-sample
+
+version: 1.0.0
+
+securitySchemes:
+  basic:
+    description: This API Support Basic Authentication
+    type: Basic Authentication
+
+/booking:
+  get:
+    securedBy:  [basic]
+    description: retrieve list
+    queryParameters:
+      destination:
+        type: string
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+            example:  |
+              {
+                "from":"hyd",
+                "to"  :"mumbai"
+              }
+
+
+
