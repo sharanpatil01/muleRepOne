@@ -15,6 +15,9 @@
 
 		<app.runtime>4.3.0-20201013</app.runtime>
 		<mule.maven.plugin.version>3.3.5</mule.maven.plugin.version>
+		
+		<mule.home>C:\Sharans\softwares\muleServers\mule-ee-430\mule43node2</mule.home>
+		<app.runtime>4.3.0</app.runtime>
 	</properties>
 
 	<build>
@@ -24,12 +27,22 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>3.0.0</version>
 			</plugin>
+			
+			
+			
 			<plugin>
 				<groupId>org.mule.tools.maven</groupId>
 				<artifactId>mule-maven-plugin</artifactId>
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
+				
 				<configuration>
+					<standaloneDeployment>
+						<muleHome>${mule.home}</muleHome>
+						<muleVersion>${app.runtime}</muleVersion>
+						<applicationName>StockTradeSystemMuleApp</applicationName>
+					</standaloneDeployment>
+					
 					<sharedLibraries>
 						<sharedLibrary>
 							<groupId>com.mycompany</groupId>
