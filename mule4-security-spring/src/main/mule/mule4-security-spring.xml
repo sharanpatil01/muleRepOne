@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:spring="http://www.mulesoft.org/schema/mule/spring"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ss="http://www.springframework.org/schema/security"
+	xmlns="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/spring http://www.mulesoft.org/schema/mule/spring/current/mule-spring.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="41f6bca2-e8ce-4018-a1fe-b4d972589559" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+
+	
+	<spring:config name="Spring_Config" doc:name="Spring Config" doc:id="48d28ff4-2561-48a2-9671-e0d6df6010d9" files="beans.xml" />
+	
+	
+	<spring:security-manager>
+		<spring:delegate-security-provider name="memory-provider" delegate-ref="authenticationManager" />
+	</spring:security-manager>
+	
+	
+	
+	<flow 
+		name="mule4-security-springFlow" 
+		doc:id="976c49e2-3ee4-45ab-add7-8969a0dbb06e" >
+		
+		<http:listener doc:name="Listener  /security" config-ref="HTTP_Listener_config" path="/security"/>
+		
+		<http:basic-security-filter doc:name="Basic Security Filter" realm="mule"  />
+		<spring:authorization-filter doc:name="Authorization filter" requiredAuthorities="ROLE_ADMIN"/>
+		
+		<ee:transform doc:name="Transform Message" doc:id="ae657a44-f1ad-4831-a63b-00a98441c968" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+		message : "Hello World"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3d08085c-022b-4552-a169-d9f1d0a2991c" />
+	</flow>
+	
+	
+	
+</mule>
