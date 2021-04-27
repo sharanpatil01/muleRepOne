@@ -9,6 +9,9 @@
 
 	<name>pingservice</name>
 
+
+
+
     <description>ping service has test url /ping</description>
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
