@@ -22,5 +22,21 @@ payload]]></ee:set-payload>
 		</ee:transform>
 		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="3bb2d755-a680-44f3-a89d-d79998610fce" message="#[payload]" />
 		<logger level="INFO" doc:name="Logger" doc:id="4013620e-0083-44aa-9a87-ddd0e3d0a4f3" message="#[sizeOf(payload)]"/>
+		<foreach doc:name="For Each" doc:id="cbd2c9a2-885b-47af-9c58-01569b0d5a0d" >
+			<logger level="INFO" doc:name="Logger" doc:id="f390a743-19bc-4cd5-ab1d-8cf7ad7fd032" message="#[vars.counter]"/>
+			<ee:transform doc:name="Transform Message" doc:id="74abce41-a8c1-41f5-9399-3ad4fe6f9aa6" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload
+
+
+
+]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="INFO" doc:name="Logger" doc:id="965f62a9-715f-45aa-b987-67f4058a3ec6" message="#[payload]"/>
+		</foreach>
 	</flow>
 </mule>

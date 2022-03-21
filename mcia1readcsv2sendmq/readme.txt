@@ -14,9 +14,9 @@ MCIA1:
 4. what combination of mule component is most idiomatic when implementing this requirement?
 
 		a. scatter-gather (with onErrorContinue)?
-		a. VM connector first successfful on Error propagate?
-		a. For Each scope (with onErrorContinue)?
-		a. async scope (with onErrorContinue)?
+		b. VM connector first successfful on Error propagate?
+		c. For Each scope (with onErrorContinue)?
+		d. async scope (with onErrorContinue)?
 
 
 
