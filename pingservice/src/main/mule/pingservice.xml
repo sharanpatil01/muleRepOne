@@ -8,6 +8,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="5c98e20e-0207-454f-8d57-5f8bbd2a823b" >
 		<http:listener-connection host="0.0.0.0" port="8083" />
 	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="7ce4fa9a-c18b-4716-8bb4-09ca1ee3a52b" >
+		<http:request-connection host="localhost" port="8083" />
+	</http:request-config>
 	<flow name="pingserviceFlow" doc:id="065cd41a-dedd-4b81-8eb9-74ed134c4a8d" >
 		<http:listener doc:name="8083/ping" doc:id="6d834afd-d088-475f-b314-afa84ccc16d4" config-ref="HTTP_Listener_config" path="/ping" allowedMethods="GET"/>
 		<logger level="INFO" doc:name="Logger" doc:id="52c72b1e-1b10-4771-820c-b699ee683446" message="#['ping service called &amp; its up!!!']"/>
@@ -24,4 +27,14 @@ output application/json
 			</ee:message>
 		</ee:transform>
 	</flow>
+	<flow name="pingserviceFlow1" doc:id="715d44ff-25f9-415e-b837-a28bde454ba6" >
+		<scheduler doc:name="Scheduler" doc:id="aaa5b724-1346-484a-8633-5f7525ac9c7d" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="30" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<http:request method="GET" doc:name="Request" doc:id="36cee7ba-37e1-4672-86d0-688e54bca02d" config-ref="HTTP_Request_configuration" path="/ping"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b1eb6d10-fe01-4c37-8a94-c2f670a303c0" message="#[payload]"/>
+	</flow>
+
 </mule>
