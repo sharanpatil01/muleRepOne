@@ -21,5 +21,8 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 			<vm:queue queueName="empqueue" queueType="PERSISTENT"/>
 		</vm:queues>
 	</vm:config>
+	
+	<global-property doc:name="Global Property" doc:id="434b36ad-627a-4d62-b98e-7d07498ad888" name="servername" value="muleserver1" />
+
 
 </mule>
